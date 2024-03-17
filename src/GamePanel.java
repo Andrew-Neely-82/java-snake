@@ -32,11 +32,29 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     public void startGame() {
-        newApple();
-        running = true;
+        // Set running to false initially
+        running = false;
+
+        // Start the timer
         timer = new Timer(DELAY, this);
         timer.start();
+
+        // Start the countdown
+        int countdown = 3;
+        while (countdown > 0) {
+            try {
+                Thread.sleep(1000); // Wait for 1 second
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            countdown--;
+        }
+
+        // After the countdown, set running to true and start the game
+        running = true;
+        newApple();
     }
+
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -45,21 +63,29 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public void draw(Graphics g) {
         /* TODO: Grid */
-        for (int i = 0; i < SCREEN_HEIGHT / UNIT_SIZE; i++) {
-            g.drawLine(i * UNIT_SIZE, 0, i * UNIT_SIZE, SCREEN_HEIGHT);
-            g.drawLine(0, i * UNIT_SIZE, SCREEN_WIDTH, i * UNIT_SIZE);
-        }
-        g.setColor(Color.red);
-        g.fillOval(appleX, appleY, UNIT_SIZE, UNIT_SIZE);
-
-        for (int i = 0; i < bodyParts; i++) {
-            if (i == 0) {
-                g.setColor(Color.green);
-                g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
-            } else {
-                g.setColor(new Color(45, 180, 0));
-                g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
+        if (running) {
+            for (int i = 0; i < SCREEN_HEIGHT / UNIT_SIZE; i++) {
+                g.drawLine(i * UNIT_SIZE, 0, i * UNIT_SIZE, SCREEN_HEIGHT);
+                g.drawLine(0, i * UNIT_SIZE, SCREEN_WIDTH, i * UNIT_SIZE);
             }
+            g.setColor(Color.red);
+            g.fillOval(appleX, appleY, UNIT_SIZE, UNIT_SIZE);
+
+            for (int i = 0; i < bodyParts; i++) {
+                if (i == 0) {
+                    g.setColor(Color.green);
+                    g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
+                } else {
+                    g.setColor(new Color(45, 180, 0));
+                    g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
+                }
+                g.setColor(Color.red);
+                g.setFont(new Font("Ink Free", Font.BOLD, 75));
+                FontMetrics metrics = getFontMetrics(g.getFont());
+                g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics.stringWidth("Score: " + applesEaten)) / 2, g.getFont().getSize());
+            }
+        } else {
+            gameOver(g);
         }
     }
 
@@ -93,12 +119,17 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     public void checkApple() {
+        if ((x[0] == appleX) && (y[0] == appleY)) {
+            bodyParts++;
+            applesEaten++;
+            newApple();
+        }
     }
 
     public void checkCollisions() {
         // TODO checks to see if head collides with body
-        for (int i = bodyParts; i < 0; i--) {
-            if (x[0] == x[i] && y[0] == y[i]) {
+        for (int i = bodyParts; i > 0; i--) {
+            if ((x[0] == x[i]) && (y[0] == y[i])) {
                 running = false;
             }
         }
@@ -125,6 +156,12 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     public void gameOver(Graphics g) {
+        g.setColor(Color.red);
+        g.setFont(new Font("Ink Free", Font.BOLD, 75));
+        FontMetrics metrics = getFontMetrics(g.getFont());
+        g.drawString("Game Over", (SCREEN_WIDTH - metrics.stringWidth("Game Over")) / 2, SCREEN_HEIGHT / 2);
+        g.setFont(new Font("Ink Free", Font.BOLD, 50));
+        g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics.stringWidth("Score: " + applesEaten)) / 2, SCREEN_HEIGHT / 2 + 50);
     }
 
     @Override
@@ -141,26 +178,59 @@ public class GamePanel extends JPanel implements ActionListener {
         @Override
         public void keyPressed(KeyEvent e) {
             switch (e.getKeyCode()) {
-                case KeyEvent.VK_LEFT:
+                // TODO:
+                case KeyEvent.VK_LEFT, KeyEvent.VK_A:
                     if (direction != 'R') {
                         direction = 'L';
                     }
                     break;
-                case KeyEvent.VK_RIGHT:
+                // TODO:
+                case KeyEvent.VK_RIGHT, KeyEvent.VK_D:
                     if (direction != 'L') {
                         direction = 'R';
                     }
                     break;
-                case KeyEvent.VK_UP:
+                // TODO:
+                case KeyEvent.VK_UP, KeyEvent.VK_W:
                     if (direction != 'D') {
                         direction = 'U';
                     }
                     break;
-                case KeyEvent.VK_DOWN:
+                // TODO:
+                case KeyEvent.VK_DOWN, KeyEvent.VK_S:
                     if (direction != 'U') {
                         direction = 'D';
                     }
             }
         }
+
+    }
+
+    public void restartGame() {
+        // Stop the timer
+        timer.stop();
+
+        // Reset variables
+        bodyParts = 6;
+        applesEaten = 0;
+        direction = 'R';
+        running = false;
+
+        // Reinitialize snake position
+        x[0] = SCREEN_WIDTH / 3;
+        y[0] = SCREEN_HEIGHT / 3;
+
+        // Reinitialize apple position
+        newApple();
+
+        // Reattach key listener
+        this.addKeyListener(new MyKeyAdapter());
+
+        // Request focus for the panel
+        this.requestFocusInWindow();
+
+        // Restart the game
+        running = true;
+        timer.start();
     }
 }
