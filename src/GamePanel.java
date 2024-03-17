@@ -10,8 +10,8 @@ public class GamePanel extends JPanel implements ActionListener {
     static final byte UNIT_SIZE = 25;
     static final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / UNIT_SIZE;
     static final byte DELAY = 75;
-    final int x[] = new int[GAME_UNITS];
-    final int y[] = new int[GAME_UNITS];
+    final int[] x = new int[GAME_UNITS];
+    final int[] y = new int[GAME_UNITS];
     int bodyParts = 6;
     int applesEaten;
     int appleX;
@@ -24,7 +24,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
     GamePanel() {
         random = new Random();
-        this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
+        this.setPreferredSize(new Dimension(SCREEN_WIDTH - (UNIT_SIZE), SCREEN_HEIGHT + (UNIT_SIZE)));
         this.setBackground(Color.black);
         this.setFocusable(true);
         this.addKeyListener(new MyKeyAdapter());
@@ -90,8 +90,8 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     public void newApple() {
-        appleX = random.nextInt((int) (SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
-        appleY = random.nextInt((int) (SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
+        appleX = random.nextInt(SCREEN_WIDTH / UNIT_SIZE) * UNIT_SIZE;
+        appleY = random.nextInt(SCREEN_HEIGHT / UNIT_SIZE) * UNIT_SIZE;
     }
 
 
@@ -131,6 +131,7 @@ public class GamePanel extends JPanel implements ActionListener {
         for (int i = bodyParts; i > 0; i--) {
             if ((x[0] == x[i]) && (y[0] == y[i])) {
                 running = false;
+                break;
             }
         }
         // TODO checks if head touches left border
@@ -138,7 +139,7 @@ public class GamePanel extends JPanel implements ActionListener {
             running = false;
         }
         // TODO checks if head touches right border
-        if (x[0] > SCREEN_WIDTH) {
+        if (x[0] > SCREEN_WIDTH - (UNIT_SIZE * 2)) {
             running = false;
         }
         // TODO checks if head touches top
@@ -146,7 +147,7 @@ public class GamePanel extends JPanel implements ActionListener {
             running = false;
         }
         // TODO checks if head touches bottom
-        if (y[0] > SCREEN_HEIGHT) {
+        if (y[0] > SCREEN_HEIGHT - (UNIT_SIZE)) {
             running = false;
         }
 
@@ -217,8 +218,8 @@ public class GamePanel extends JPanel implements ActionListener {
         running = false;
 
         // Reinitialize snake position
-        x[0] = SCREEN_WIDTH / 3;
-        y[0] = SCREEN_HEIGHT / 3;
+        x[0] = SCREEN_WIDTH / 2 - 200;
+        y[0] = SCREEN_HEIGHT / 2;
 
         // Reinitialize apple position
         newApple();
